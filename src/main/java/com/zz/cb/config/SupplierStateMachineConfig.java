@@ -37,7 +37,7 @@ public class SupplierStateMachineConfig extends StateMachineConfigurerAdapter<Su
                 .and()
                 .withExternal().source(SupplierStatus.ONLINE).target(SupplierStatus.OFFLINE).event(SupplierEvent.MANUAL_OFFLINE)
                 .and()
-                .withInternal().source(SupplierStatus.UNHEALTHY).action(offlineAction()).timerOnce(10000)
+                .withInternal().source(SupplierStatus.UNHEALTHY).action(offlineAction()).timerOnce(3000)
                 .and()
                 .withExternal().source(SupplierStatus.UNHEALTHY).target(SupplierStatus.ONLINE).event(SupplierEvent.MANUAL_ONLINE)
                 .and()

@@ -34,6 +34,7 @@ public class SupplierStateMachinePersister implements StateMachinePersister<Supp
         Supplier supplier = supplierRepository.findById(supplierId)
                 .orElseThrow(() -> new IllegalArgumentException("Supplier not found"));
         stateMachine.getExtendedState().getVariables().put("supplierId", supplierId);
+        stateMachine.getExtendedState().getVariables().put("supplier", supplier);
         stateMachine.stop();
         stateMachine.getStateMachineAccessor().doWithAllRegions(function -> function.resetStateMachine(new DefaultStateMachineContext<>(supplier.getStatus(), null, null, null)));
         stateMachine.start();
