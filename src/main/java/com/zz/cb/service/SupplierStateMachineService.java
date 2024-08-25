@@ -1,8 +1,8 @@
 package com.zz.cb.service;
 
+import com.zz.cb.model.SupplierEvent;
 import com.zz.cb.model.SupplierStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
@@ -11,15 +11,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class SupplierStateMachineService {
 
-    private final StateMachineFactory<SupplierStatus, String> stateMachineFactory;
+    private final StateMachineFactory<SupplierStatus, SupplierEvent> stateMachineFactory;
 
     @Autowired
-    public SupplierStateMachineService(StateMachineFactory<SupplierStatus, String> stateMachineFactory) {
+    public SupplierStateMachineService(StateMachineFactory<SupplierStatus, SupplierEvent> stateMachineFactory) {
         this.stateMachineFactory = stateMachineFactory;
     }
 
-    public SupplierStatus sendEvent(SupplierStatus currentStatus, String event) {
-        StateMachine<SupplierStatus, String> stateMachine = stateMachineFactory.getStateMachine();
+    public SupplierStatus sendEvent(SupplierStatus currentStatus, SupplierEvent event) {
+        StateMachine<SupplierStatus, SupplierEvent> stateMachine = stateMachineFactory.getStateMachine();
 
         stateMachine.stopReactively().block();
         stateMachine.getStateMachineAccessor()

@@ -1,6 +1,7 @@
 package com.zz.cb.service;
 
 import com.zz.cb.model.Supplier;
+import com.zz.cb.model.SupplierEvent;
 import com.zz.cb.model.SupplierStatus;
 import com.zz.cb.repository.SupplierRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class SupplierService {
         return supplierRepository.save(supplier);
     }
 
-    public SupplierStatus updateSupplierStatus(Long supplierId, String event) {
+    public SupplierStatus updateSupplierStatus(Long supplierId, SupplierEvent event) {
         Supplier supplier = supplierRepository.findBySupplierId(supplierId)
                 .orElseThrow(() -> new RuntimeException("Supplier not found"));
 
