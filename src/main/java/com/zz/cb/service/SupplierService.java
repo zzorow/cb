@@ -26,9 +26,7 @@ public class SupplierService {
     }
 
     public SupplierStatus updateSupplierStatus(Long supplierId, SupplierEvent event) {
-        SupplierStatus newStatus = supplierStateTransitionService.sendEvent(supplierId, event);
-
-        return newStatus;
+        return supplierStateTransitionService.sendEvent(supplierId, event);
     }
 
     public Optional<Supplier> getSupplier(Long supplierId) {

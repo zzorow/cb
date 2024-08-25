@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class OfflineAction implements Action<SupplierStatus, SupplierEvent> {
     @Setter(onMethod_ = @Autowired)
-    private ApplicationEventPublisher eventPublisher;
-    @Setter(onMethod_ = @Autowired)
     private SupplierRepository supplierRepository;
 
     @Override

@@ -6,14 +6,11 @@ import com.zz.cb.model.SupplierStatus;
 import com.zz.cb.repository.SupplierRepository;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.statemachine.ExtendedState;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.persist.StateMachinePersister;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class SupplierStateMachinePersister implements StateMachinePersister<SupplierStatus, SupplierEvent, Long> {
