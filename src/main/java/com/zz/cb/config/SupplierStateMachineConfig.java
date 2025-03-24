@@ -1,73 +1,60 @@
 package com.zz.cb.config;
 
+import com.zz.cb.action.OfflineAction;
+import com.zz.cb.model.SupplierEvent;
 import com.zz.cb.model.SupplierStatus;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.statemachine.StateMachinePersist;
-import org.springframework.statemachine.config.EnableStateMachineFactory;
+import org.springframework.statemachine.config.EnableStateMachine;
 import org.springframework.statemachine.config.StateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
-import org.springframework.statemachine.data.redis.RedisStateMachineContextRepository;
-import org.springframework.statemachine.persist.RepositoryStateMachinePersist;
-import org.springframework.statemachine.persist.StateMachineRuntimePersister;
+import org.springframework.statemachine.persist.StateMachinePersister;
+
+import java.util.EnumSet;
 
 @Configuration
-@EnableStateMachineFactory
-public class SupplierStateMachineConfig extends StateMachineConfigurerAdapter<SupplierStatus, String> {
+@EnableStateMachine(name = "supplierStateMachine")
+public class SupplierStateMachineConfig extends StateMachineConfigurerAdapter<SupplierStatus, SupplierEvent> {
 
-    @Autowired
-    private RedisConnectionFactory redisConnectionFactory;
-
-    @Bean
-    public RedisStateMachineContextRepository<SupplierStatus, String> redisStateMachineContextRepository() {
-        return new RedisStateMachineContextRepository<>(redisConnectionFactory);
-    }
-
-    @Bean
-    public StateMachinePersist<SupplierStatus, String, String> stateMachinePersist(
-            RedisStateMachineContextRepository<SupplierStatus, String> repository) {
-        return new RepositoryStateMachinePersist<>(repository);
-    }
-
-    @Bean
-    public StateMachineRuntimePersister<SupplierStatus, String, String> stateMachineRuntimePersister(
-            StateMachinePersist<SupplierStatus, String, String> stateMachinePersist) {
-        return new StateMachinePersisterAdapter<>(stateMachinePersist);
-    }
+    @Setter(onMethod_ = @Autowired)
+    private SupplierStateMachinePersister supplierStateMachinePersister;
 
     @Override
-    public void configure(StateMachineStateConfigurer<SupplierStatus, String> states) throws Exception {
+    public void configure(StateMachineStateConfigurer<SupplierStatus, SupplierEvent> states) throws Exception {
         states
                 .withStates()
-                .initial(SupplierStatus.OFFLINE)
-                .state(SupplierStatus.ONLINE)
-                .state(SupplierStatus.BUSY);
+                .initial(SupplierStatus.ONLINE)
+                .states(EnumSet.allOf(SupplierStatus.class));
     }
 
     @Override
-    public void configure(StateMachineTransitionConfigurer<SupplierStatus, String> transitions) throws Exception {
+    public void configure(StateMachineTransitionConfigurer<SupplierStatus, SupplierEvent> transitions) throws Exception {
         transitions
-                .withExternal()
-                .source(SupplierStatus.OFFLINE)
-                .target(SupplierStatus.ONLINE)
-                .event("GO_ONLINE")
+                .withExternal().source(SupplierStatus.ONLINE).target(SupplierStatus.UNHEALTHY).event(SupplierEvent.UNHEALTHY)
                 .and()
-                .withExternal()
-                .source(SupplierStatus.ONLINE)
-                .target(SupplierStatus.OFFLINE)
-                .event("GO_OFFLINE")
+                .withExternal().source(SupplierStatus.ONLINE).target(SupplierStatus.OFFLINE).event(SupplierEvent.MANUAL_OFFLINE)
                 .and()
-                .withExternal()
-                .source(SupplierStatus.ONLINE)
-                .target(SupplierStatus.BUSY)
-                .event("BECOME_BUSY")
+                .withInternal().source(SupplierStatus.UNHEALTHY).action(offlineAction()).timerOnce(3000)
                 .and()
-                .withExternal()
-                .source(SupplierStatus.BUSY)
-                .target(SupplierStatus.ONLINE)
-                .event("BECOME_AVAILABLE");
+                .withExternal().source(SupplierStatus.UNHEALTHY).target(SupplierStatus.ONLINE).event(SupplierEvent.MANUAL_ONLINE)
+                .and()
+                .withExternal().source(SupplierStatus.UNHEALTHY).target(SupplierStatus.OFFLINE).event(SupplierEvent.MANUAL_OFFLINE)
+                .and()
+                .withExternal().source(SupplierStatus.OFFLINE).target(SupplierStatus.ONLINE).event(SupplierEvent.MANUAL_ONLINE)
+                .and()
+                .withExternal().source(SupplierStatus.UNHEALTHY).target(SupplierStatus.OFFLINE).event(SupplierEvent.TIMEOUT);
+    }
+
+    @Bean
+    public OfflineAction offlineAction(){
+        return new OfflineAction();
+    }
+
+    @Bean
+    public StateMachinePersister<SupplierStatus, SupplierEvent, Long> persister(){
+        return supplierStateMachinePersister;
     }
 }
